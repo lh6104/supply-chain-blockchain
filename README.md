@@ -24,8 +24,8 @@ A decentralized pharmaceutical supply chain management system built on Ethereum 
 
 ```bash
 # Clone the repository
-git clone https://github.com/user/Supply-Chain-Blockchain.git
-cd Supply-Chain-Blockchain
+git clone https://github.com/lh6104/supply-chain-blockchain/tree/main
+cd supply-chain-blockchain
 
 # Install all dependencies
 cd smart-contracts && npm install && cd ..
