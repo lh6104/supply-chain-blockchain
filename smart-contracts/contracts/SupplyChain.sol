@@ -99,429 +99,189 @@ contract SupplyChain {
     event ParticipantRegistered(string role, address indexed participant, uint256 id, uint256 timestamp);
 
     // ============================================
-    // ROLE STRUCTS
+    // PARTICIPANT STRUCTS
     // ============================================
     struct Manufacturer {
         address addr;
         uint256 id;
-        uint256 registeredAt;
-        bool active;
+        string name;
+        string place;
     }
 
     struct Distributor {
         address addr;
         uint256 id;
-        uint256 registeredAt;
-        bool active;
+        string name;
+        string place;
     }
 
     struct Retailer {
         address addr;
         uint256 id;
-        uint256 registeredAt;
-        bool active;
+        string name;
+        string place;
     }
 
-    // Role mappings
+    // Participant storage
     mapping(uint256 => Manufacturer) public MAN;
     mapping(uint256 => Distributor) public DIS;
     mapping(uint256 => Retailer) public RET;
 
-    // Address to role ID mappings (for faster lookups)
+    // Address to ID mappings (for role verification)
     mapping(address => uint256) public manAddressToId;
     mapping(address => uint256) public disAddressToId;
     mapping(address => uint256) public retAddressToId;
 
     // ============================================
-    // OWNER FUNCTIONS - Participant Management Only
+    // PARTICIPANT REGISTRATION (Owner Only)
     // ============================================
 
-    /**
-     * @dev Register a new Manufacturer (Owner only)
-     */
-    function addManufacturer(address _address) public onlyOwner {
-        require(_address != address(0), "Invalid address");
+    function addManufacturer(address _address, string memory _name, string memory _place) public onlyOwner {
         require(manAddressToId[_address] == 0, "Manufacturer already registered");
-        require(disAddressToId[_address] == 0, "Address is already a Distributor");
-        require(retAddressToId[_address] == 0, "Address is already a Retailer");
-        
         manCtr++;
-        MAN[manCtr] = Manufacturer(_address, manCtr, block.timestamp, true);
+        MAN[manCtr] = Manufacturer(_address, manCtr, _name, _place);
         manAddressToId[_address] = manCtr;
-        
         emit ParticipantRegistered("Manufacturer", _address, manCtr, block.timestamp);
     }
 
-    /**
-     * @dev Register a new Distributor (Owner only)
-     */
-    function addDistributor(address _address) public onlyOwner {
-        require(_address != address(0), "Invalid address");
+    function addDistributor(address _address, string memory _name, string memory _place) public onlyOwner {
         require(disAddressToId[_address] == 0, "Distributor already registered");
-        require(manAddressToId[_address] == 0, "Address is already a Manufacturer");
-        require(retAddressToId[_address] == 0, "Address is already a Retailer");
-        
         disCtr++;
-        DIS[disCtr] = Distributor(_address, disCtr, block.timestamp, true);
+        DIS[disCtr] = Distributor(_address, disCtr, _name, _place);
         disAddressToId[_address] = disCtr;
-        
         emit ParticipantRegistered("Distributor", _address, disCtr, block.timestamp);
     }
 
-    /**
-     * @dev Register a new Retailer (Owner only)
-     */
-    function addRetailer(address _address) public onlyOwner {
-        require(_address != address(0), "Invalid address");
+    function addRetailer(address _address, string memory _name, string memory _place) public onlyOwner {
         require(retAddressToId[_address] == 0, "Retailer already registered");
-        require(manAddressToId[_address] == 0, "Address is already a Manufacturer");
-        require(disAddressToId[_address] == 0, "Address is already a Distributor");
-        
         retCtr++;
-        RET[retCtr] = Retailer(_address, retCtr, block.timestamp, true);
+        RET[retCtr] = Retailer(_address, retCtr, _name, _place);
         retAddressToId[_address] = retCtr;
-        
         emit ParticipantRegistered("Retailer", _address, retCtr, block.timestamp);
     }
 
     // ============================================
-    // MANUFACTURER FUNCTIONS
+    // MEDICINE CREATION (Manufacturer Only)
     // ============================================
 
     /**
-     * @dev Create a new medicine (Manufacturer only)
-     * @notice Metadata is stored off-chain in the backend API
-     * @return The new medicine ID
+     * @dev Create a new medicine. Only manufacturers can call this.
+     * @notice No strings stored on-chain! Metadata is stored off-chain via API.
+     * @return id The new medicine ID
      */
     function addMedicine() public onlyManufacturer returns (uint256) {
         medicineCtr++;
-        uint256 timestamp = block.timestamp;
-        uint256 manId = manAddressToId[msg.sender];
-        
         MedicineStock[medicineCtr] = Medicine({
             id: medicineCtr,
             manufacturer: msg.sender,
             distributor: address(0),
             retailer: address(0),
             stage: STAGE.Manufactured,
-            createdAt: timestamp,
-            updatedAt: timestamp,
-            MANid: manId,
+            createdAt: block.timestamp,
+            updatedAt: block.timestamp,
+            MANid: manAddressToId[msg.sender],
             DISid: 0,
             RETid: 0
         });
-
-        emit MedicineCreated(medicineCtr, msg.sender, timestamp);
-        
+        emit MedicineCreated(medicineCtr, msg.sender, block.timestamp);
         return medicineCtr;
     }
 
-    /**
-     * @dev Pack the medicine (Manufacturer only)
-     */
-    function packMedicine(uint256 _medicineID) public onlyManufacturer {
-        require(_medicineID > 0 && _medicineID <= medicineCtr, "Invalid medicine ID");
-        require(MedicineStock[_medicineID].manufacturer == msg.sender, "Not your product");
-        require(MedicineStock[_medicineID].stage == STAGE.Manufactured, "Medicine must be in Manufactured stage");
-        
-        MedicineStock[_medicineID].stage = STAGE.Packed;
-        MedicineStock[_medicineID].updatedAt = block.timestamp;
-        
-        emit StageUpdated(_medicineID, STAGE.Packed, msg.sender, block.timestamp);
-    }
-
-    /**
-     * @dev Ship medicine to a specific distributor (Manufacturer only)
-     */
-    function shipToDistributor(uint256 _medicineID, address _distributor) public onlyManufacturer {
-        require(_medicineID > 0 && _medicineID <= medicineCtr, "Invalid medicine ID");
-        require(MedicineStock[_medicineID].manufacturer == msg.sender, "Not your product");
-        require(MedicineStock[_medicineID].stage == STAGE.Packed, "Medicine must be Packed first");
-        require(disAddressToId[_distributor] > 0, "Invalid distributor address");
-        
-        MedicineStock[_medicineID].distributor = _distributor;
-        MedicineStock[_medicineID].DISid = disAddressToId[_distributor];
-        MedicineStock[_medicineID].stage = STAGE.ShippedToDistributor;
-        MedicineStock[_medicineID].updatedAt = block.timestamp;
-        
-        emit StageUpdated(_medicineID, STAGE.ShippedToDistributor, msg.sender, block.timestamp);
-    }
-
     // ============================================
-    // DISTRIBUTOR FUNCTIONS
+    // STAGE TRANSITIONS (State Machine)
     // ============================================
 
     /**
-     * @dev Receive medicine from manufacturer (Distributor only)
+     * @dev Pack the medicine. Manufacturer only.
      */
-    function receiveByDistributor(uint256 _medicineID) public onlyDistributor {
-        require(_medicineID > 0 && _medicineID <= medicineCtr, "Invalid medicine ID");
-        require(MedicineStock[_medicineID].distributor == msg.sender, "Not assigned to you");
-        require(MedicineStock[_medicineID].stage == STAGE.ShippedToDistributor, "Medicine not shipped to you yet");
+    function pack(uint256 _id) public onlyManufacturer {
+        require(_id > 0 && _id <= medicineCtr, "Invalid medicine ID");
+        require(MedicineStock[_id].stage == STAGE.Manufactured, "Medicine must be in Manufactured stage");
+        require(MedicineStock[_id].manufacturer == msg.sender, "Only the manufacturer who created this can pack it");
         
-        MedicineStock[_medicineID].stage = STAGE.ReceivedByDistributor;
-        MedicineStock[_medicineID].updatedAt = block.timestamp;
-        
-        emit StageUpdated(_medicineID, STAGE.ReceivedByDistributor, msg.sender, block.timestamp);
+        MedicineStock[_id].stage = STAGE.Packed;
+        MedicineStock[_id].updatedAt = block.timestamp;
+        emit StageUpdated(_id, STAGE.Packed, msg.sender, block.timestamp);
     }
 
     /**
-     * @dev Ship medicine to a specific retailer (Distributor only)
+     * @dev Ship to distributor. Manufacturer only.
      */
-    function shipToRetailer(uint256 _medicineID, address _retailer) public onlyDistributor {
-        require(_medicineID > 0 && _medicineID <= medicineCtr, "Invalid medicine ID");
-        require(MedicineStock[_medicineID].distributor == msg.sender, "Not your shipment");
-        require(MedicineStock[_medicineID].stage == STAGE.ReceivedByDistributor, "Must receive first");
-        require(retAddressToId[_retailer] > 0, "Invalid retailer address");
+    function shipToDistributor(uint256 _id, uint256 _distributorId) public onlyManufacturer {
+        require(_id > 0 && _id <= medicineCtr, "Invalid medicine ID");
+        require(MedicineStock[_id].stage == STAGE.Packed, "Medicine must be in Packed stage");
+        require(MedicineStock[_id].manufacturer == msg.sender, "Only the manufacturer who created this can ship it");
+        require(_distributorId > 0 && _distributorId <= disCtr, "Invalid distributor ID");
         
-        MedicineStock[_medicineID].retailer = _retailer;
-        MedicineStock[_medicineID].RETid = retAddressToId[_retailer];
-        MedicineStock[_medicineID].stage = STAGE.ShippedToRetailer;
-        MedicineStock[_medicineID].updatedAt = block.timestamp;
-        
-        emit StageUpdated(_medicineID, STAGE.ShippedToRetailer, msg.sender, block.timestamp);
-    }
-
-    // ============================================
-    // RETAILER FUNCTIONS
-    // ============================================
-
-    /**
-     * @dev Receive medicine from distributor (Retailer only)
-     */
-    function receiveByRetailer(uint256 _medicineID) public onlyRetailer {
-        require(_medicineID > 0 && _medicineID <= medicineCtr, "Invalid medicine ID");
-        require(MedicineStock[_medicineID].retailer == msg.sender, "Not assigned to you");
-        require(MedicineStock[_medicineID].stage == STAGE.ShippedToRetailer, "Medicine not shipped to you yet");
-        
-        MedicineStock[_medicineID].stage = STAGE.ReceivedByRetailer;
-        MedicineStock[_medicineID].updatedAt = block.timestamp;
-        
-        emit StageUpdated(_medicineID, STAGE.ReceivedByRetailer, msg.sender, block.timestamp);
+        MedicineStock[_id].stage = STAGE.ShippedToDistributor;
+        MedicineStock[_id].distributor = DIS[_distributorId].addr;
+        MedicineStock[_id].DISid = _distributorId;
+        MedicineStock[_id].updatedAt = block.timestamp;
+        emit StageUpdated(_id, STAGE.ShippedToDistributor, msg.sender, block.timestamp);
     }
 
     /**
-     * @dev Sell medicine to customer (Retailer only)
+     * @dev Receive from manufacturer. Distributor only.
      */
-    function sellMedicine(uint256 _medicineID) public onlyRetailer {
-        require(_medicineID > 0 && _medicineID <= medicineCtr, "Invalid medicine ID");
-        require(MedicineStock[_medicineID].retailer == msg.sender, "Not your product");
-        require(MedicineStock[_medicineID].stage == STAGE.ReceivedByRetailer, "Must receive first");
+    function receiveByDistributor(uint256 _id) public onlyDistributor {
+        require(_id > 0 && _id <= medicineCtr, "Invalid medicine ID");
+        require(MedicineStock[_id].stage == STAGE.ShippedToDistributor, "Medicine must be in ShippedToDistributor stage");
+        require(MedicineStock[_id].distributor == msg.sender, "Only the assigned distributor can receive this");
         
-        MedicineStock[_medicineID].stage = STAGE.Sold;
-        MedicineStock[_medicineID].updatedAt = block.timestamp;
+        MedicineStock[_id].stage = STAGE.ReceivedByDistributor;
+        MedicineStock[_id].updatedAt = block.timestamp;
+        emit StageUpdated(_id, STAGE.ReceivedByDistributor, msg.sender, block.timestamp);
+    }
+
+    /**
+     * @dev Ship to retailer. Distributor only.
+     */
+    function shipToRetailer(uint256 _id, uint256 _retailerId) public onlyDistributor {
+        require(_id > 0 && _id <= medicineCtr, "Invalid medicine ID");
+        require(MedicineStock[_id].stage == STAGE.ReceivedByDistributor, "Medicine must be in ReceivedByDistributor stage");
+        require(MedicineStock[_id].distributor == msg.sender, "Only the assigned distributor can ship this");
+        require(_retailerId > 0 && _retailerId <= retCtr, "Invalid retailer ID");
         
-        emit StageUpdated(_medicineID, STAGE.Sold, msg.sender, block.timestamp);
+        MedicineStock[_id].stage = STAGE.ShippedToRetailer;
+        MedicineStock[_id].retailer = RET[_retailerId].addr;
+        MedicineStock[_id].RETid = _retailerId;
+        MedicineStock[_id].updatedAt = block.timestamp;
+        emit StageUpdated(_id, STAGE.ShippedToRetailer, msg.sender, block.timestamp);
+    }
+
+    /**
+     * @dev Receive from distributor. Retailer only.
+     */
+    function receiveByRetailer(uint256 _id) public onlyRetailer {
+        require(_id > 0 && _id <= medicineCtr, "Invalid medicine ID");
+        require(MedicineStock[_id].stage == STAGE.ShippedToRetailer, "Medicine must be in ShippedToRetailer stage");
+        require(MedicineStock[_id].retailer == msg.sender, "Only the assigned retailer can receive this");
+        
+        MedicineStock[_id].stage = STAGE.ReceivedByRetailer;
+        MedicineStock[_id].updatedAt = block.timestamp;
+        emit StageUpdated(_id, STAGE.ReceivedByRetailer, msg.sender, block.timestamp);
+    }
+
+    /**
+     * @dev Sell to customer. Retailer only.
+     */
+    function sell(uint256 _id) public onlyRetailer {
+        require(_id > 0 && _id <= medicineCtr, "Invalid medicine ID");
+        require(MedicineStock[_id].stage == STAGE.ReceivedByRetailer, "Medicine must be in ReceivedByRetailer stage");
+        require(MedicineStock[_id].retailer == msg.sender, "Only the assigned retailer can sell this");
+        
+        MedicineStock[_id].stage = STAGE.Sold;
+        MedicineStock[_id].updatedAt = block.timestamp;
+        emit StageUpdated(_id, STAGE.Sold, msg.sender, block.timestamp);
     }
 
     // ============================================
     // VIEW FUNCTIONS
     // ============================================
 
-    /**
-     * @dev Get medicine data
-     */
-    function getMedicine(uint256 _id) public view returns (
-        uint256 id,
-        address manufacturer,
-        address distributor,
-        address retailer,
-        STAGE stage,
-        uint256 createdAt,
-        uint256 updatedAt
-    ) {
-        require(_id > 0 && _id <= medicineCtr, "Invalid medicine ID");
-        Medicine storage m = MedicineStock[_id];
-        return (m.id, m.manufacturer, m.distributor, m.retailer, m.stage, m.createdAt, m.updatedAt);
-    }
-
-    /**
-     * @dev Get medicine count
-     */
     function getMedicineCount() public view returns (uint256) {
         return medicineCtr;
     }
-
-    /**
-     * @dev Get human-readable stage name
-     */
-    function showStage(uint256 _medicineID) public view returns (string memory) {
-        require(_medicineID > 0 && _medicineID <= medicineCtr, "Invalid medicine ID");
-        
-        STAGE stage = MedicineStock[_medicineID].stage;
-        
-        if (stage == STAGE.Manufactured) return "Manufactured";
-        if (stage == STAGE.Packed) return "Packed";
-        if (stage == STAGE.ShippedToDistributor) return "Shipped to Distributor";
-        if (stage == STAGE.ReceivedByDistributor) return "Received by Distributor";
-        if (stage == STAGE.ShippedToRetailer) return "Shipped to Retailer";
-        if (stage == STAGE.ReceivedByRetailer) return "Received by Retailer";
-        if (stage == STAGE.Sold) return "Sold";
-        
-        return "Unknown";
-    }
-
-    /**
-     * @dev Get stage as number
-     */
-    function getStage(uint256 _medicineID) public view returns (STAGE) {
-        require(_medicineID > 0 && _medicineID <= medicineCtr, "Invalid medicine ID");
-        return MedicineStock[_medicineID].stage;
-    }
-
-    // ============================================
-    // ROLE CHECK FUNCTIONS
-    // ============================================
-
-    function isOwner(address _addr) public view returns (bool) {
-        return _addr == Owner;
-    }
-
-    function isManufacturer(address _addr) public view returns (bool) {
-        return manAddressToId[_addr] > 0;
-    }
-
-    function isDistributor(address _addr) public view returns (bool) {
-        return disAddressToId[_addr] > 0;
-    }
-
-    function isRetailer(address _addr) public view returns (bool) {
-        return retAddressToId[_addr] > 0;
-    }
-
-    /**
-     * @dev Get the role of an address
-     * @return role: "Owner", "Manufacturer", "Distributor", "Retailer", or "Unregistered"
-     */
-    function getRole(address _addr) public view returns (string memory) {
-        if (_addr == Owner) return "Owner";
-        if (manAddressToId[_addr] > 0) return "Manufacturer";
-        if (disAddressToId[_addr] > 0) return "Distributor";
-        if (retAddressToId[_addr] > 0) return "Retailer";
-        return "Unregistered";
-    }
-
-    // ============================================
-    // INVENTORY QUERIES (for frontend)
-    // ============================================
-
-    /**
-     * @dev Get medicines by manufacturer
-     */
-    function getMedicinesByManufacturer(address _manufacturer) public view returns (uint256[] memory) {
-        uint256 count = 0;
-        for (uint256 i = 1; i <= medicineCtr; i++) {
-            if (MedicineStock[i].manufacturer == _manufacturer) {
-                count++;
-            }
-        }
-        
-        uint256[] memory result = new uint256[](count);
-        uint256 index = 0;
-        for (uint256 i = 1; i <= medicineCtr; i++) {
-            if (MedicineStock[i].manufacturer == _manufacturer) {
-                result[index] = i;
-                index++;
-            }
-        }
-        return result;
-    }
-
-    /**
-     * @dev Get medicines assigned to distributor (inbound shipments)
-     */
-    function getMedicinesByDistributor(address _distributor) public view returns (uint256[] memory) {
-        uint256 count = 0;
-        for (uint256 i = 1; i <= medicineCtr; i++) {
-            if (MedicineStock[i].distributor == _distributor) {
-                count++;
-            }
-        }
-        
-        uint256[] memory result = new uint256[](count);
-        uint256 index = 0;
-        for (uint256 i = 1; i <= medicineCtr; i++) {
-            if (MedicineStock[i].distributor == _distributor) {
-                result[index] = i;
-                index++;
-            }
-        }
-        return result;
-    }
-
-    /**
-     * @dev Get medicines assigned to retailer (stock)
-     */
-    function getMedicinesByRetailer(address _retailer) public view returns (uint256[] memory) {
-        uint256 count = 0;
-        for (uint256 i = 1; i <= medicineCtr; i++) {
-            if (MedicineStock[i].retailer == _retailer) {
-                count++;
-            }
-        }
-        
-        uint256[] memory result = new uint256[](count);
-        uint256 index = 0;
-        for (uint256 i = 1; i <= medicineCtr; i++) {
-            if (MedicineStock[i].retailer == _retailer) {
-                result[index] = i;
-                index++;
-            }
-        }
-        return result;
-    }
-
-    /**
-     * @dev Get pending shipments for distributor (ShippedToDistributor but not received)
-     */
-    function getPendingForDistributor(address _distributor) public view returns (uint256[] memory) {
-        uint256 count = 0;
-        for (uint256 i = 1; i <= medicineCtr; i++) {
-            if (MedicineStock[i].distributor == _distributor && 
-                MedicineStock[i].stage == STAGE.ShippedToDistributor) {
-                count++;
-            }
-        }
-        
-        uint256[] memory result = new uint256[](count);
-        uint256 index = 0;
-        for (uint256 i = 1; i <= medicineCtr; i++) {
-            if (MedicineStock[i].distributor == _distributor && 
-                MedicineStock[i].stage == STAGE.ShippedToDistributor) {
-                result[index] = i;
-                index++;
-            }
-        }
-        return result;
-    }
-
-    /**
-     * @dev Get pending shipments for retailer (ShippedToRetailer but not received)
-     */
-    function getPendingForRetailer(address _retailer) public view returns (uint256[] memory) {
-        uint256 count = 0;
-        for (uint256 i = 1; i <= medicineCtr; i++) {
-            if (MedicineStock[i].retailer == _retailer && 
-                MedicineStock[i].stage == STAGE.ShippedToRetailer) {
-                count++;
-            }
-        }
-        
-        uint256[] memory result = new uint256[](count);
-        uint256 index = 0;
-        for (uint256 i = 1; i <= medicineCtr; i++) {
-            if (MedicineStock[i].retailer == _retailer && 
-                MedicineStock[i].stage == STAGE.ShippedToRetailer) {
-                result[index] = i;
-                index++;
-            }
-        }
-        return result;
-    }
-
-    // ============================================
-    // PARTICIPANT QUERIES
-    // ============================================
 
     function getManufacturerCount() public view returns (uint256) {
         return manCtr;
@@ -535,25 +295,78 @@ contract SupplyChain {
         return retCtr;
     }
 
-    /**
-     * @dev Get all distributors (for manufacturer to select when shipping)
-     */
-    function getAllDistributors() public view returns (address[] memory) {
-        address[] memory distributors = new address[](disCtr);
-        for (uint256 i = 1; i <= disCtr; i++) {
-            distributors[i - 1] = DIS[i].addr;
-        }
-        return distributors;
+    function getMedicineStage(uint256 _id) public view returns (STAGE) {
+        require(_id > 0 && _id <= medicineCtr, "Invalid medicine ID");
+        return MedicineStock[_id].stage;
     }
 
-    /**
-     * @dev Get all retailers (for distributor to select when shipping)
-     */
-    function getAllRetailers() public view returns (address[] memory) {
-        address[] memory retailers = new address[](retCtr);
-        for (uint256 i = 1; i <= retCtr; i++) {
-            retailers[i - 1] = RET[i].addr;
-        }
-        return retailers;
+    function getMedicine(uint256 _id) public view returns (
+        uint256 id,
+        address manufacturer,
+        address distributor,
+        address retailer,
+        STAGE stage,
+        uint256 createdAt,
+        uint256 updatedAt,
+        uint256 MANid,
+        uint256 DISid,
+        uint256 RETid
+    ) {
+        require(_id > 0 && _id <= medicineCtr, "Invalid medicine ID");
+        Medicine memory med = MedicineStock[_id];
+        return (
+            med.id,
+            med.manufacturer,
+            med.distributor,
+            med.retailer,
+            med.stage,
+            med.createdAt,
+            med.updatedAt,
+            med.MANid,
+            med.DISid,
+            med.RETid
+        );
+    }
+
+    function getManufacturer(uint256 _id) public view returns (address addr, uint256 id, string memory name, string memory place) {
+        require(_id > 0 && _id <= manCtr, "Invalid manufacturer ID");
+        Manufacturer memory man = MAN[_id];
+        return (man.addr, man.id, man.name, man.place);
+    }
+
+    function getDistributor(uint256 _id) public view returns (address addr, uint256 id, string memory name, string memory place) {
+        require(_id > 0 && _id <= disCtr, "Invalid distributor ID");
+        Distributor memory dis = DIS[_id];
+        return (dis.addr, dis.id, dis.name, dis.place);
+    }
+
+    function getRetailer(uint256 _id) public view returns (address addr, uint256 id, string memory name, string memory place) {
+        require(_id > 0 && _id <= retCtr, "Invalid retailer ID");
+        Retailer memory ret = RET[_id];
+        return (ret.addr, ret.id, ret.name, ret.place);
+    }
+
+    // Check if address is a manufacturer
+    function isManufacturer(address _addr) public view returns (bool) {
+        return manAddressToId[_addr] > 0;
+    }
+
+    // Check if address is a distributor
+    function isDistributor(address _addr) public view returns (bool) {
+        return disAddressToId[_addr] > 0;
+    }
+
+    // Check if address is a retailer
+    function isRetailer(address _addr) public view returns (bool) {
+        return retAddressToId[_addr] > 0;
+    }
+
+    // Get role of an address
+    function getRole(address _addr) public view returns (string memory) {
+        if (_addr == Owner) return "Owner";
+        if (manAddressToId[_addr] > 0) return "Manufacturer";
+        if (disAddressToId[_addr] > 0) return "Distributor";
+        if (retAddressToId[_addr] > 0) return "Retailer";
+        return "None";
     }
 }

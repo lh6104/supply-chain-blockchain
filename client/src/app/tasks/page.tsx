@@ -139,14 +139,15 @@ const roleActions: Record<string, ActionConfig | null> = {
       { stage: 5, key: 'sell', label: 'Mark as Sold', description: 'Record sale to customer', nextStage: 'Sold' },
     ]
   },
-  'OWNER': null,
-  'UNREGISTERED': null,
+  'ADMIN': null,
+  'RMS': null,
+  'GUEST': null,
   'LOADING': null,
 };
 
 export default function TasksPage() {
   const router = useRouter();
-  const { role, currentAccount: roleAccount, isLoading: roleLoading, getRoleDisplayName } = useRole();
+  const { role, currentAccount: roleAccount, isLoading: roleLoading } = useRole();
   const [currentAccount, setCurrentAccount] = useState('');
   const [loading, setLoading] = useState(true);
   const [supplyChain, setSupplyChain] = useState<any>(null);
@@ -319,8 +320,8 @@ export default function TasksPage() {
     );
   }
 
-  // Show access denied for owner and unregistered users
-  if (role === 'OWNER' || role === 'UNREGISTERED') {
+  // Show access denied for admin and guests
+  if (role === 'ADMIN' || role === 'GUEST') {
     return (
       <div className="min-h-screen bg-[#0a0a0f] flex">
         <Sidebar />
@@ -331,15 +332,15 @@ export default function TasksPage() {
                 <Icons.Shield className="w-10 h-10 text-amber-400" />
               </div>
               <h2 className="text-2xl font-bold text-white mb-4">
-                {role === 'OWNER' ? 'Owner View' : 'Access Restricted'}
+                {role === 'ADMIN' ? 'Owner View' : 'Access Restricted'}
               </h2>
               <p className="text-gray-400 mb-6">
-                {role === 'OWNER' 
+                {role === 'ADMIN' 
                   ? 'As the contract owner, you manage participants but do not perform supply chain tasks. Manufacturers, Distributors, and Retailers handle product workflow.'
                   : 'You need to be registered as a supply chain participant (Manufacturer, Distributor, or Retailer) to access tasks. Contact the Owner to register your wallet address.'}
               </p>
               <div className="flex gap-3 justify-center">
-                {role === 'OWNER' && (
+                {role === 'ADMIN' && (
                   <button
                     onClick={() => router.push('/roles')}
                     className="px-6 py-3 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition-colors"
@@ -406,7 +407,7 @@ export default function TasksPage() {
             <div className="text-sm text-gray-400">Pending Tasks</div>
           </div>
           <div className="bg-[#12121a] rounded-xl p-4 border border-gray-800/50">
-            <div className="text-2xl font-bold text-blue-400">{getRoleDisplayName()}</div>
+            <div className="text-2xl font-bold text-blue-400">{role}</div>
             <div className="text-sm text-gray-400">Your Role</div>
           </div>
           <div className="bg-[#12121a] rounded-xl p-4 border border-gray-800/50">

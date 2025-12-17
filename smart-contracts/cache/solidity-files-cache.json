@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "/home/longha/Desktop/Supply-Chain-Blockchain/smart-contracts/contracts/SupplyChain.sol": {
-      "lastModificationDate": 1765340254327,
-      "contentHash": "088d8ba2fabd6e6da662be566c9cbada",
+      "lastModificationDate": 1765351984017,
+      "contentHash": "9b192b750a4fddcef82c27f0c5f7e59f",
       "sourceName": "contracts/SupplyChain.sol",
       "solcConfig": {
         "version": "0.8.19",

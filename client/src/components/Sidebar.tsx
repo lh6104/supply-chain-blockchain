@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Icons } from './Icons';
-import { useRole, getRoleDisplayNameStatic, isOwnerRole, isParticipantRole, UserRole } from '@/hooks/useRole';
+import { useRole, getRoleDisplayName, isAdmin, isParticipant, UserRole } from '@/hooks/useRole';
 import { WalletModal } from './WalletModal';
 import { UserProfileDropdown } from './UserProfileDropdown';
 import { useWallet } from '@/contexts/WalletContext';
@@ -16,13 +16,13 @@ interface MenuItem {
   roles: UserRole[]; // Which roles can see this item
 }
 
-// All menu items with role-based visibility (updated for new workflow)
+// All menu items with role-based visibility
 const allMenuItems: MenuItem[] = [
-  { icon: Icons.Dashboard, label: 'Dashboard', path: '/dashboard', roles: ['OWNER', 'MANUFACTURER', 'DISTRIBUTOR', 'RETAILER', 'UNREGISTERED'] },
-  { icon: Icons.Participants, label: 'Participants', path: '/roles', roles: ['OWNER'] },
-  { icon: Icons.Products, label: 'Products', path: '/addmed', roles: ['MANUFACTURER'] },
-  { icon: Icons.Tasks, label: 'My Tasks', path: '/tasks', roles: ['MANUFACTURER', 'DISTRIBUTOR', 'RETAILER'] },
-  { icon: Icons.Track, label: 'Track', path: '/track', roles: ['OWNER', 'MANUFACTURER', 'DISTRIBUTOR', 'RETAILER', 'UNREGISTERED'] },
+  { icon: Icons.Dashboard, label: 'Dashboard', path: '/dashboard', roles: ['ADMIN', 'RMS', 'MANUFACTURER', 'DISTRIBUTOR', 'RETAILER', 'GUEST'] },
+  { icon: Icons.Participants, label: 'Participants', path: '/roles', roles: ['ADMIN'] },
+  { icon: Icons.Products, label: 'Products', path: '/addmed', roles: ['ADMIN'] },
+  { icon: Icons.Tasks, label: 'My Tasks', path: '/tasks', roles: ['RMS', 'MANUFACTURER', 'DISTRIBUTOR', 'RETAILER'] },
+  { icon: Icons.Track, label: 'Track', path: '/track', roles: ['ADMIN', 'RMS', 'MANUFACTURER', 'DISTRIBUTOR', 'RETAILER', 'GUEST'] },
 ];
 
 interface SidebarProps {
@@ -129,30 +129,12 @@ export function Sidebar({ currentAccount: propAccount }: SidebarProps) {
         </div>
       </div>
 
-      {/* Role Badge */}
-      {currentAccount && (
-        <div className={`mx-4 mb-4 px-3 py-2 rounded-lg flex items-center gap-2 ${
-          role === 'OWNER' ? 'bg-purple-500/10 border border-purple-500/30' :
-          role === 'MANUFACTURER' ? 'bg-blue-500/10 border border-blue-500/30' :
-          role === 'DISTRIBUTOR' ? 'bg-green-500/10 border border-green-500/30' :
-          role === 'RETAILER' ? 'bg-orange-500/10 border border-orange-500/30' :
-          'bg-gray-500/10 border border-gray-500/30'
-        }`}>
-          <div className={`w-2 h-2 rounded-full animate-pulse ${
-            role === 'OWNER' ? 'bg-purple-400' :
-            role === 'MANUFACTURER' ? 'bg-blue-400' :
-            role === 'DISTRIBUTOR' ? 'bg-green-400' :
-            role === 'RETAILER' ? 'bg-orange-400' :
-            'bg-gray-400'
-          }`} />
-          <span className={`text-xs font-semibold ${
-            role === 'OWNER' ? 'text-purple-400' :
-            role === 'MANUFACTURER' ? 'text-blue-400' :
-            role === 'DISTRIBUTOR' ? 'text-green-400' :
-            role === 'RETAILER' ? 'text-orange-400' :
-            'text-gray-400'
-          }`}>{getRoleDisplayNameStatic(role)}</span>
-          {isLocalhost && <span className="text-gray-500 text-xs ml-auto">Dev</span>}
+      {/* DEV MODE Badge */}
+      {isLocalhost && (
+        <div className="mx-4 mb-4 px-3 py-2 bg-amber-500/10 border border-amber-500/30 rounded-lg flex items-center gap-2">
+          <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
+          <span className="text-amber-400 text-xs font-semibold">DEV MODE</span>
+          <span className="text-amber-400/60 text-xs ml-auto">All menus</span>
         </div>
       )}
 
@@ -192,7 +174,7 @@ export function Sidebar({ currentAccount: propAccount }: SidebarProps) {
           </div>
           <div className="flex-1 min-w-0 text-left">
             <p className="text-white font-medium text-sm truncate">{shortAddress}</p>
-            <p className="text-gray-500 text-xs">{getRoleDisplayNameStatic(role)}</p>
+            <p className="text-gray-500 text-xs">{getRoleDisplayName(role)}</p>
           </div>
           <svg 
             className={`w-4 h-4 text-gray-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} 

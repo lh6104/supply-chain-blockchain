@@ -1,5 +1,7 @@
 # 🔗 Pharmaceutical Supply Chain Blockchain DApp
 
+**Course:** Blockchain Technology UET-VNU
+
 A decentralized pharmaceutical supply chain management system built on Ethereum blockchain. Track medicines from manufacturer to consumer with complete transparency and immutability.
 
 ## ✨ Features
@@ -249,6 +251,17 @@ After switching accounts in MetaMask:
 | Frontend | Next.js 14, React, TailwindCSS |
 | Web3 | Web3.js, MetaMask |
 | Backend | Node.js, Express (optional) |
+
+---
+
+## 🧭 Hướng phát triển tương lai
+
+- Triển khai production: cấu hình nhiều mạng (testnet/mainnet), script migrate dữ liệu và verify contract để sẵn sàng đưa lên môi trường thật.
+- Củng cố bảo mật: thêm `Ownable`/multisig cho Owner, cơ chế pause/emergency withdraw, kiểm thử fuzz/coverage và checklist audit.
+- Dữ liệu & truy xuất: lưu metadata/giấy tờ lô thuốc lên IPFS/Arweave kèm chữ ký số; mở API xác thực QR code từ nguồn công khai.
+- Hiệu năng & quan sát: dựng indexer/off-chain cache (ví dụ The Graph/Redis) để tra cứu nhanh, thêm logging/metrics và cảnh báo khi giao dịch treo.
+- Tính năng nghiệp vụ: hỗ trợ batch/lot, hạn dùng, recall/return, tracking nhiệt độ/vị trí qua oracle (Chainlink) hoặc tích hợp IoT gateway.
+- Trải nghiệm người dùng: PWA/mobile-friendly, đa ngôn ngữ, thông báo theo vai trò (email/webhook) và hướng dẫn thao tác ngay trên UI.
 
 ---
 

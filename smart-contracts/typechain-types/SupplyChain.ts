@@ -37,36 +37,30 @@ export interface SupplyChainInterface extends Interface {
       | "addRetailer"
       | "disAddressToId"
       | "disCtr"
-      | "getAllDistributors"
-      | "getAllRetailers"
+      | "getDistributor"
       | "getDistributorCount"
+      | "getManufacturer"
       | "getManufacturerCount"
       | "getMedicine"
       | "getMedicineCount"
-      | "getMedicinesByDistributor"
-      | "getMedicinesByManufacturer"
-      | "getMedicinesByRetailer"
-      | "getPendingForDistributor"
-      | "getPendingForRetailer"
+      | "getMedicineStage"
+      | "getRetailer"
       | "getRetailerCount"
       | "getRole"
-      | "getStage"
       | "isDistributor"
       | "isManufacturer"
-      | "isOwner"
       | "isRetailer"
       | "manAddressToId"
       | "manCtr"
       | "medicineCtr"
-      | "packMedicine"
+      | "pack"
       | "receiveByDistributor"
       | "receiveByRetailer"
       | "retAddressToId"
       | "retCtr"
-      | "sellMedicine"
+      | "sell"
       | "shipToDistributor"
       | "shipToRetailer"
-      | "showStage"
   ): FunctionFragment;
 
   getEvent(
@@ -86,11 +80,11 @@ export interface SupplyChainInterface extends Interface {
   encodeFunctionData(functionFragment: "RET", values: [BigNumberish]): string;
   encodeFunctionData(
     functionFragment: "addDistributor",
-    values: [AddressLike]
+    values: [AddressLike, string, string]
   ): string;
   encodeFunctionData(
     functionFragment: "addManufacturer",
-    values: [AddressLike]
+    values: [AddressLike, string, string]
   ): string;
   encodeFunctionData(
     functionFragment: "addMedicine",
@@ -98,7 +92,7 @@ export interface SupplyChainInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "addRetailer",
-    values: [AddressLike]
+    values: [AddressLike, string, string]
   ): string;
   encodeFunctionData(
     functionFragment: "disAddressToId",
@@ -106,16 +100,16 @@ export interface SupplyChainInterface extends Interface {
   ): string;
   encodeFunctionData(functionFragment: "disCtr", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "getAllDistributors",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getAllRetailers",
-    values?: undefined
+    functionFragment: "getDistributor",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getDistributorCount",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getManufacturer",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getManufacturerCount",
@@ -130,24 +124,12 @@ export interface SupplyChainInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "getMedicinesByDistributor",
-    values: [AddressLike]
+    functionFragment: "getMedicineStage",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "getMedicinesByManufacturer",
-    values: [AddressLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getMedicinesByRetailer",
-    values: [AddressLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getPendingForDistributor",
-    values: [AddressLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getPendingForRetailer",
-    values: [AddressLike]
+    functionFragment: "getRetailer",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getRetailerCount",
@@ -158,19 +140,11 @@ export interface SupplyChainInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "getStage",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
     functionFragment: "isDistributor",
     values: [AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "isManufacturer",
-    values: [AddressLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "isOwner",
     values: [AddressLike]
   ): string;
   encodeFunctionData(
@@ -186,10 +160,7 @@ export interface SupplyChainInterface extends Interface {
     functionFragment: "medicineCtr",
     values?: undefined
   ): string;
-  encodeFunctionData(
-    functionFragment: "packMedicine",
-    values: [BigNumberish]
-  ): string;
+  encodeFunctionData(functionFragment: "pack", values: [BigNumberish]): string;
   encodeFunctionData(
     functionFragment: "receiveByDistributor",
     values: [BigNumberish]
@@ -203,21 +174,14 @@ export interface SupplyChainInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(functionFragment: "retCtr", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "sellMedicine",
-    values: [BigNumberish]
-  ): string;
+  encodeFunctionData(functionFragment: "sell", values: [BigNumberish]): string;
   encodeFunctionData(
     functionFragment: "shipToDistributor",
-    values: [BigNumberish, AddressLike]
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "shipToRetailer",
-    values: [BigNumberish, AddressLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "showStage",
-    values: [BigNumberish]
+    values: [BigNumberish, BigNumberish]
   ): string;
 
   decodeFunctionResult(functionFragment: "DIS", data: BytesLike): Result;
@@ -250,15 +214,15 @@ export interface SupplyChainInterface extends Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "disCtr", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "getAllDistributors",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getAllRetailers",
+    functionFragment: "getDistributor",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "getDistributorCount",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getManufacturer",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -274,23 +238,11 @@ export interface SupplyChainInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getMedicinesByDistributor",
+    functionFragment: "getMedicineStage",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getMedicinesByManufacturer",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getMedicinesByRetailer",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getPendingForDistributor",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getPendingForRetailer",
+    functionFragment: "getRetailer",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -298,7 +250,6 @@ export interface SupplyChainInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "getRole", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "getStage", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "isDistributor",
     data: BytesLike
@@ -307,7 +258,6 @@ export interface SupplyChainInterface extends Interface {
     functionFragment: "isManufacturer",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "isOwner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "isRetailer", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "manAddressToId",
@@ -318,10 +268,7 @@ export interface SupplyChainInterface extends Interface {
     functionFragment: "medicineCtr",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "packMedicine",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: "pack", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "receiveByDistributor",
     data: BytesLike
@@ -335,10 +282,7 @@ export interface SupplyChainInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "retCtr", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "sellMedicine",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: "sell", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "shipToDistributor",
     data: BytesLike
@@ -347,7 +291,6 @@ export interface SupplyChainInterface extends Interface {
     functionFragment: "shipToRetailer",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "showStage", data: BytesLike): Result;
 }
 
 export namespace MedicineCreatedEvent {
@@ -468,11 +411,11 @@ export interface SupplyChain extends BaseContract {
   DIS: TypedContractMethod<
     [arg0: BigNumberish],
     [
-      [string, bigint, bigint, boolean] & {
+      [string, bigint, string, string] & {
         addr: string;
         id: bigint;
-        registeredAt: bigint;
-        active: boolean;
+        name: string;
+        place: string;
       }
     ],
     "view"
@@ -481,11 +424,11 @@ export interface SupplyChain extends BaseContract {
   MAN: TypedContractMethod<
     [arg0: BigNumberish],
     [
-      [string, bigint, bigint, boolean] & {
+      [string, bigint, string, string] & {
         addr: string;
         id: bigint;
-        registeredAt: bigint;
-        active: boolean;
+        name: string;
+        place: string;
       }
     ],
     "view"
@@ -526,24 +469,24 @@ export interface SupplyChain extends BaseContract {
   RET: TypedContractMethod<
     [arg0: BigNumberish],
     [
-      [string, bigint, bigint, boolean] & {
+      [string, bigint, string, string] & {
         addr: string;
         id: bigint;
-        registeredAt: bigint;
-        active: boolean;
+        name: string;
+        place: string;
       }
     ],
     "view"
   >;
 
   addDistributor: TypedContractMethod<
-    [_address: AddressLike],
+    [_address: AddressLike, _name: string, _place: string],
     [void],
     "nonpayable"
   >;
 
   addManufacturer: TypedContractMethod<
-    [_address: AddressLike],
+    [_address: AddressLike, _name: string, _place: string],
     [void],
     "nonpayable"
   >;
@@ -551,7 +494,7 @@ export interface SupplyChain extends BaseContract {
   addMedicine: TypedContractMethod<[], [bigint], "nonpayable">;
 
   addRetailer: TypedContractMethod<
-    [_address: AddressLike],
+    [_address: AddressLike, _name: string, _place: string],
     [void],
     "nonpayable"
   >;
@@ -560,18 +503,51 @@ export interface SupplyChain extends BaseContract {
 
   disCtr: TypedContractMethod<[], [bigint], "view">;
 
-  getAllDistributors: TypedContractMethod<[], [string[]], "view">;
-
-  getAllRetailers: TypedContractMethod<[], [string[]], "view">;
+  getDistributor: TypedContractMethod<
+    [_id: BigNumberish],
+    [
+      [string, bigint, string, string] & {
+        addr: string;
+        id: bigint;
+        name: string;
+        place: string;
+      }
+    ],
+    "view"
+  >;
 
   getDistributorCount: TypedContractMethod<[], [bigint], "view">;
+
+  getManufacturer: TypedContractMethod<
+    [_id: BigNumberish],
+    [
+      [string, bigint, string, string] & {
+        addr: string;
+        id: bigint;
+        name: string;
+        place: string;
+      }
+    ],
+    "view"
+  >;
 
   getManufacturerCount: TypedContractMethod<[], [bigint], "view">;
 
   getMedicine: TypedContractMethod<
     [_id: BigNumberish],
     [
-      [bigint, string, string, string, bigint, bigint, bigint] & {
+      [
+        bigint,
+        string,
+        string,
+        string,
+        bigint,
+        bigint,
+        bigint,
+        bigint,
+        bigint,
+        bigint
+      ] & {
         id: bigint;
         manufacturer: string;
         distributor: string;
@@ -579,6 +555,9 @@ export interface SupplyChain extends BaseContract {
         stage: bigint;
         createdAt: bigint;
         updatedAt: bigint;
+        MANid: bigint;
+        DISid: bigint;
+        RETid: bigint;
       }
     ],
     "view"
@@ -586,33 +565,18 @@ export interface SupplyChain extends BaseContract {
 
   getMedicineCount: TypedContractMethod<[], [bigint], "view">;
 
-  getMedicinesByDistributor: TypedContractMethod<
-    [_distributor: AddressLike],
-    [bigint[]],
-    "view"
-  >;
+  getMedicineStage: TypedContractMethod<[_id: BigNumberish], [bigint], "view">;
 
-  getMedicinesByManufacturer: TypedContractMethod<
-    [_manufacturer: AddressLike],
-    [bigint[]],
-    "view"
-  >;
-
-  getMedicinesByRetailer: TypedContractMethod<
-    [_retailer: AddressLike],
-    [bigint[]],
-    "view"
-  >;
-
-  getPendingForDistributor: TypedContractMethod<
-    [_distributor: AddressLike],
-    [bigint[]],
-    "view"
-  >;
-
-  getPendingForRetailer: TypedContractMethod<
-    [_retailer: AddressLike],
-    [bigint[]],
+  getRetailer: TypedContractMethod<
+    [_id: BigNumberish],
+    [
+      [string, bigint, string, string] & {
+        addr: string;
+        id: bigint;
+        name: string;
+        place: string;
+      }
+    ],
     "view"
   >;
 
@@ -620,13 +584,9 @@ export interface SupplyChain extends BaseContract {
 
   getRole: TypedContractMethod<[_addr: AddressLike], [string], "view">;
 
-  getStage: TypedContractMethod<[_medicineID: BigNumberish], [bigint], "view">;
-
   isDistributor: TypedContractMethod<[_addr: AddressLike], [boolean], "view">;
 
   isManufacturer: TypedContractMethod<[_addr: AddressLike], [boolean], "view">;
-
-  isOwner: TypedContractMethod<[_addr: AddressLike], [boolean], "view">;
 
   isRetailer: TypedContractMethod<[_addr: AddressLike], [boolean], "view">;
 
@@ -636,20 +596,16 @@ export interface SupplyChain extends BaseContract {
 
   medicineCtr: TypedContractMethod<[], [bigint], "view">;
 
-  packMedicine: TypedContractMethod<
-    [_medicineID: BigNumberish],
-    [void],
-    "nonpayable"
-  >;
+  pack: TypedContractMethod<[_id: BigNumberish], [void], "nonpayable">;
 
   receiveByDistributor: TypedContractMethod<
-    [_medicineID: BigNumberish],
+    [_id: BigNumberish],
     [void],
     "nonpayable"
   >;
 
   receiveByRetailer: TypedContractMethod<
-    [_medicineID: BigNumberish],
+    [_id: BigNumberish],
     [void],
     "nonpayable"
   >;
@@ -658,25 +614,19 @@ export interface SupplyChain extends BaseContract {
 
   retCtr: TypedContractMethod<[], [bigint], "view">;
 
-  sellMedicine: TypedContractMethod<
-    [_medicineID: BigNumberish],
-    [void],
-    "nonpayable"
-  >;
+  sell: TypedContractMethod<[_id: BigNumberish], [void], "nonpayable">;
 
   shipToDistributor: TypedContractMethod<
-    [_medicineID: BigNumberish, _distributor: AddressLike],
+    [_id: BigNumberish, _distributorId: BigNumberish],
     [void],
     "nonpayable"
   >;
 
   shipToRetailer: TypedContractMethod<
-    [_medicineID: BigNumberish, _retailer: AddressLike],
+    [_id: BigNumberish, _retailerId: BigNumberish],
     [void],
     "nonpayable"
   >;
-
-  showStage: TypedContractMethod<[_medicineID: BigNumberish], [string], "view">;
 
   getFunction<T extends ContractMethod = ContractMethod>(
     key: string | FunctionFragment
@@ -687,11 +637,11 @@ export interface SupplyChain extends BaseContract {
   ): TypedContractMethod<
     [arg0: BigNumberish],
     [
-      [string, bigint, bigint, boolean] & {
+      [string, bigint, string, string] & {
         addr: string;
         id: bigint;
-        registeredAt: bigint;
-        active: boolean;
+        name: string;
+        place: string;
       }
     ],
     "view"
@@ -701,11 +651,11 @@ export interface SupplyChain extends BaseContract {
   ): TypedContractMethod<
     [arg0: BigNumberish],
     [
-      [string, bigint, bigint, boolean] & {
+      [string, bigint, string, string] & {
         addr: string;
         id: bigint;
-        registeredAt: bigint;
-        active: boolean;
+        name: string;
+        place: string;
       }
     ],
     "view"
@@ -749,27 +699,39 @@ export interface SupplyChain extends BaseContract {
   ): TypedContractMethod<
     [arg0: BigNumberish],
     [
-      [string, bigint, bigint, boolean] & {
+      [string, bigint, string, string] & {
         addr: string;
         id: bigint;
-        registeredAt: bigint;
-        active: boolean;
+        name: string;
+        place: string;
       }
     ],
     "view"
   >;
   getFunction(
     nameOrSignature: "addDistributor"
-  ): TypedContractMethod<[_address: AddressLike], [void], "nonpayable">;
+  ): TypedContractMethod<
+    [_address: AddressLike, _name: string, _place: string],
+    [void],
+    "nonpayable"
+  >;
   getFunction(
     nameOrSignature: "addManufacturer"
-  ): TypedContractMethod<[_address: AddressLike], [void], "nonpayable">;
+  ): TypedContractMethod<
+    [_address: AddressLike, _name: string, _place: string],
+    [void],
+    "nonpayable"
+  >;
   getFunction(
     nameOrSignature: "addMedicine"
   ): TypedContractMethod<[], [bigint], "nonpayable">;
   getFunction(
     nameOrSignature: "addRetailer"
-  ): TypedContractMethod<[_address: AddressLike], [void], "nonpayable">;
+  ): TypedContractMethod<
+    [_address: AddressLike, _name: string, _place: string],
+    [void],
+    "nonpayable"
+  >;
   getFunction(
     nameOrSignature: "disAddressToId"
   ): TypedContractMethod<[arg0: AddressLike], [bigint], "view">;
@@ -777,14 +739,36 @@ export interface SupplyChain extends BaseContract {
     nameOrSignature: "disCtr"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
-    nameOrSignature: "getAllDistributors"
-  ): TypedContractMethod<[], [string[]], "view">;
-  getFunction(
-    nameOrSignature: "getAllRetailers"
-  ): TypedContractMethod<[], [string[]], "view">;
+    nameOrSignature: "getDistributor"
+  ): TypedContractMethod<
+    [_id: BigNumberish],
+    [
+      [string, bigint, string, string] & {
+        addr: string;
+        id: bigint;
+        name: string;
+        place: string;
+      }
+    ],
+    "view"
+  >;
   getFunction(
     nameOrSignature: "getDistributorCount"
   ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "getManufacturer"
+  ): TypedContractMethod<
+    [_id: BigNumberish],
+    [
+      [string, bigint, string, string] & {
+        addr: string;
+        id: bigint;
+        name: string;
+        place: string;
+      }
+    ],
+    "view"
+  >;
   getFunction(
     nameOrSignature: "getManufacturerCount"
   ): TypedContractMethod<[], [bigint], "view">;
@@ -793,7 +777,18 @@ export interface SupplyChain extends BaseContract {
   ): TypedContractMethod<
     [_id: BigNumberish],
     [
-      [bigint, string, string, string, bigint, bigint, bigint] & {
+      [
+        bigint,
+        string,
+        string,
+        string,
+        bigint,
+        bigint,
+        bigint,
+        bigint,
+        bigint,
+        bigint
+      ] & {
         id: bigint;
         manufacturer: string;
         distributor: string;
@@ -801,6 +796,9 @@ export interface SupplyChain extends BaseContract {
         stage: bigint;
         createdAt: bigint;
         updatedAt: bigint;
+        MANid: bigint;
+        DISid: bigint;
+        RETid: bigint;
       }
     ],
     "view"
@@ -809,20 +807,22 @@ export interface SupplyChain extends BaseContract {
     nameOrSignature: "getMedicineCount"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
-    nameOrSignature: "getMedicinesByDistributor"
-  ): TypedContractMethod<[_distributor: AddressLike], [bigint[]], "view">;
+    nameOrSignature: "getMedicineStage"
+  ): TypedContractMethod<[_id: BigNumberish], [bigint], "view">;
   getFunction(
-    nameOrSignature: "getMedicinesByManufacturer"
-  ): TypedContractMethod<[_manufacturer: AddressLike], [bigint[]], "view">;
-  getFunction(
-    nameOrSignature: "getMedicinesByRetailer"
-  ): TypedContractMethod<[_retailer: AddressLike], [bigint[]], "view">;
-  getFunction(
-    nameOrSignature: "getPendingForDistributor"
-  ): TypedContractMethod<[_distributor: AddressLike], [bigint[]], "view">;
-  getFunction(
-    nameOrSignature: "getPendingForRetailer"
-  ): TypedContractMethod<[_retailer: AddressLike], [bigint[]], "view">;
+    nameOrSignature: "getRetailer"
+  ): TypedContractMethod<
+    [_id: BigNumberish],
+    [
+      [string, bigint, string, string] & {
+        addr: string;
+        id: bigint;
+        name: string;
+        place: string;
+      }
+    ],
+    "view"
+  >;
   getFunction(
     nameOrSignature: "getRetailerCount"
   ): TypedContractMethod<[], [bigint], "view">;
@@ -830,16 +830,10 @@ export interface SupplyChain extends BaseContract {
     nameOrSignature: "getRole"
   ): TypedContractMethod<[_addr: AddressLike], [string], "view">;
   getFunction(
-    nameOrSignature: "getStage"
-  ): TypedContractMethod<[_medicineID: BigNumberish], [bigint], "view">;
-  getFunction(
     nameOrSignature: "isDistributor"
   ): TypedContractMethod<[_addr: AddressLike], [boolean], "view">;
   getFunction(
     nameOrSignature: "isManufacturer"
-  ): TypedContractMethod<[_addr: AddressLike], [boolean], "view">;
-  getFunction(
-    nameOrSignature: "isOwner"
   ): TypedContractMethod<[_addr: AddressLike], [boolean], "view">;
   getFunction(
     nameOrSignature: "isRetailer"
@@ -854,14 +848,14 @@ export interface SupplyChain extends BaseContract {
     nameOrSignature: "medicineCtr"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
-    nameOrSignature: "packMedicine"
-  ): TypedContractMethod<[_medicineID: BigNumberish], [void], "nonpayable">;
+    nameOrSignature: "pack"
+  ): TypedContractMethod<[_id: BigNumberish], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "receiveByDistributor"
-  ): TypedContractMethod<[_medicineID: BigNumberish], [void], "nonpayable">;
+  ): TypedContractMethod<[_id: BigNumberish], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "receiveByRetailer"
-  ): TypedContractMethod<[_medicineID: BigNumberish], [void], "nonpayable">;
+  ): TypedContractMethod<[_id: BigNumberish], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "retAddressToId"
   ): TypedContractMethod<[arg0: AddressLike], [bigint], "view">;
@@ -869,25 +863,22 @@ export interface SupplyChain extends BaseContract {
     nameOrSignature: "retCtr"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
-    nameOrSignature: "sellMedicine"
-  ): TypedContractMethod<[_medicineID: BigNumberish], [void], "nonpayable">;
+    nameOrSignature: "sell"
+  ): TypedContractMethod<[_id: BigNumberish], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "shipToDistributor"
   ): TypedContractMethod<
-    [_medicineID: BigNumberish, _distributor: AddressLike],
+    [_id: BigNumberish, _distributorId: BigNumberish],
     [void],
     "nonpayable"
   >;
   getFunction(
     nameOrSignature: "shipToRetailer"
   ): TypedContractMethod<
-    [_medicineID: BigNumberish, _retailer: AddressLike],
+    [_id: BigNumberish, _retailerId: BigNumberish],
     [void],
     "nonpayable"
   >;
-  getFunction(
-    nameOrSignature: "showStage"
-  ): TypedContractMethod<[_medicineID: BigNumberish], [string], "view">;
 
   getEvent(
     key: "MedicineCreated"

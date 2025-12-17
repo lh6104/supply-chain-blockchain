@@ -49,7 +49,7 @@ function isValidEthereumAddress(address: string): boolean {
 
 export default function Participants() {
   const router = useRouter();
-  const { role, isOwner } = useRole();
+  const { role } = useRole();
   const [currentAccount, setCurrentAccount] = useState('');
   const [loading, setLoading] = useState(true);
   const [supplyChain, setSupplyChain] = useState<any>(null);
@@ -215,7 +215,7 @@ export default function Participants() {
     );
   }
 
-  const canRegister = isOwner();
+  const canRegister = role === 'ADMIN';
 
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
@@ -372,7 +372,7 @@ export default function Participants() {
                     </>
                   ) : (
                     <>
-                      <Icons.Lock className="w-4 h-4" />
+                      <Icons.Error className="w-4 h-4" />
                       Owner Only
                     </>
                   )}
